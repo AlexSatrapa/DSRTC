@@ -88,4 +88,51 @@ typedef struct {
 
 #define NO_TEMPERATURE      0x7F
 
+class DSRTC
+{
+	public:
+		DSRTC() {};
+		~DSRTC() {};
+		static bool available();
+		// Date and Time
+		time_t get();
+		static void set(time_t t);
+		void read(tmElements_t &tm);
+		void write(tmElements_t &tm);
+		void writeTime(tmElements_t &tm);
+		void writeDate(tmElements_t &tm);
+		// Alarms
+		void readAlarm(uint8_t alarm, alarmMode_t &mode, tmElements_t &tm);
+		void writeAlarm(uint8_t alarm, alarmMode_t mode, tmElements_t tm);
+		// Control Register
+		void setBBOscillator(bool enable);
+		void setBBSqareWave(bool enable);
+		void setSQIMode(sqiMode_t mode);
+		bool isAlarmInterrupt(uint8_t alarm);
+		uint8_t readControlRegister();
+		void writeControlRegister(uint8_t value);
+		// Status Register
+		bool isOscillatorStopFlag();
+		void setOscillatorStopFlag(bool enable);
+		void setBB33kHzOutput(bool enable);
+		void setTCXORate(tempScanRate_t rate);
+		void set33kHzOutput(bool enable);
+		bool isTCXOBusy();
+		bool isAlarmFlag(uint8_t alarm);
+		uint8_t isAlarmFlag();
+		void clearAlarmFlag(uint8_t alarm);
+		uint8_t readStatusRegister();
+		void writeStatusRegister(uint8_t value);
+		// Temperature
+		void readTemperature(tpElements_t &tmp);
+	private:
+		uint8_t dec2bcd(uint8_t num);
+		uint8_t bcd2dec(uint8_t num);
+	protected:
+		virtual uint8_t read1(uint8_t addr);
+		virtual void write1(uint8_t addr, uint8_t data);
+		virtual void readN(uint8_t addr, uint8_t buf[], uint8_t len);
+		virtual void writeN(uint8_t addr, uint8_t buf[], uint8_t len);
+};
+
 #endif
