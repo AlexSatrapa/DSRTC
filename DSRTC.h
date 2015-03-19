@@ -88,4 +88,49 @@ const uint8_t DS323X_TEMP_LSB    = 0x12;
 
 const uint8_t NO_TEMPERATURE     = 0x7F;
 
+class DSRTC {
+    public:
+        // Date and Time
+        void read(tmElements_t &tm);
+        uint8_t dec2bcd(const uint8_t val);
+        uint8_t bcd2dec(const uint8_t val);
+        bool available();
+        time_t get();
+        void write(tmElements_t &tm);
+        void writeTime(tmElements_t &tm);
+        void writeDate(tmElements_t &tm);
+        // Alarms
+        void readAlarm(uint8_t alarm, alarmMode_t &mode, tmElements_t &tm);
+        void writeAlarm(uint8_t alarm, alarmMode_t mode, tmElements_t tm);
+        // Control Register
+        void setBBOscillator(bool enable);
+        void setBBSqareWave(bool enable);
+        void setSQIMode(sqiMode_t mode);
+        bool isAlarmInterrupt(uint8_t alarm);
+        uint8_t readControlRegister();
+        void writeControlRegister(uint8_t value);
+        // Status Register
+        bool isOscillatorStopFlag();
+        void setOscillatorStopFlag(bool enable);
+        void setBB33kHzOutput(bool enable);
+        void setTCXORate(tempScanRate_t rate);
+        void set33kHzOutput(bool enable);
+        bool isTCXOBusy();
+        bool isAlarmFlag(uint8_t alarm);
+        uint8_t isAlarmFlag();
+        void clearAlarmFlag(uint8_t alarm);
+        uint8_t readStatusRegister();
+        void writeStatusRegister(uint8_t value);
+        // Temperature
+        void readTemperature(tpElements_t &tmp);
+    protected:
+        void populateTimeElements( tmElements_t &tm, uint8_t TimeDate[] );
+        void populateDateElements( tmElements_t &tm, uint8_t TimeDate[] );
+    private:
+        virtual uint8_t read1(uint8_t addr);
+        virtual void write1(uint8_t addr, uint8_t data);
+        virtual void readN(uint8_t addr, uint8_t buf[], uint8_t len);
+        virtual void writeN(uint8_t addr, uint8_t buf[], uint8_t len);
+};
+
 #endif
