@@ -7,7 +7,6 @@
 #include <WProgram.h>
 #endif
 
-#include <Time.h>
 typedef struct  { 
   uint8_t Second; 
   uint8_t Minute; 
