@@ -44,7 +44,6 @@ void DSRTC::read( tmElements_t &tm )
 	tm.Year = bcd2dec(TimeDate[6]);
 	century = (TimeDate[5] & 0x80);
 	if (century != 0) tm.Year += 100;
-	tm.Year = y2kYearToTm(tm.Year);
 }
 
 inline void DSRTC::populateTimeElements( tmElements_t &tm, uint8_t TimeDate[] )
@@ -60,20 +59,12 @@ inline void DSRTC::populateDateElements( tmElements_t &tm, uint8_t TimeDate[] )
 
 	if( tm.Wday == 0 || tm.Wday > 7)
 	{
-		tmElements_t tm2;
-		breakTime( makeTime(tm), tm2 );  // Calculate Wday by converting to Unix time and back
-		tm.Wday = tm2.Wday;
+		tm.Wday = 1;
 	}
 	TimeDate[3] = tm.Wday;
 	TimeDate[4] = dec2bcd(tm.Day);
 	TimeDate[5] = dec2bcd(tm.Month);
-	y = tmYearToY2k(tm.Year);
-	if (y > 99)
-	{
-		TimeDate[5] |= 0x80; // century flag
-		y -= 100;
-	}
-	TimeDate[6] = dec2bcd(y);
+	TimeDate[6] = dec2bcd(tm.Year % 100);
 } 
 
 void DSRTC::writeDate( tmElements_t &tm )
