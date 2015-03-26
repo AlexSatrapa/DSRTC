@@ -48,8 +48,6 @@ inline void DSRTC::populateTimeElements( dsrtc_calendar_t &tm, uint8_t TimeDate[
 
 inline void DSRTC::populateDateElements( dsrtc_calendar_t &tm, uint8_t TimeDate[] )
 {
-	uint8_t y;
-
 	if( tm.Wday == 0 || tm.Wday > 7)
 	{
 		tm.Wday = 1;
