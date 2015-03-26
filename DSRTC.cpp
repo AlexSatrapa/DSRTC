@@ -14,14 +14,7 @@ bool DSRTC::available() {
 	return 1;
 }
 
-time_t DSRTC::get()
-{
-	tmElements_t tm;
-	read(tm);
-	return makeTime(tm);
-}
-
-void DSRTC::read( tmElements_t &tm )
+void DSRTC::read( dsrtc_calendar_t &tm )
 {
 	uint8_t TimeDate[7];      //second,minute,hour,dow,day,month,year
 	uint8_t century = 0;
@@ -46,14 +39,14 @@ void DSRTC::read( tmElements_t &tm )
 	if (century != 0) tm.Year += 100;
 }
 
-inline void DSRTC::populateTimeElements( tmElements_t &tm, uint8_t TimeDate[] )
+inline void DSRTC::populateTimeElements( dsrtc_calendar_t &tm, uint8_t TimeDate[] )
 {
 	TimeDate[0] = dec2bcd(tm.Second);
 	TimeDate[1] = dec2bcd(tm.Minute);
 	TimeDate[2] = dec2bcd(tm.Hour);
 }
 
-inline void DSRTC::populateDateElements( tmElements_t &tm, uint8_t TimeDate[] )
+inline void DSRTC::populateDateElements( dsrtc_calendar_t &tm, uint8_t TimeDate[] )
 {
 	uint8_t y;
 
@@ -67,7 +60,7 @@ inline void DSRTC::populateDateElements( tmElements_t &tm, uint8_t TimeDate[] )
 	TimeDate[6] = dec2bcd(tm.Year % 100);
 } 
 
-void DSRTC::writeDate( tmElements_t &tm )
+void DSRTC::writeDate( dsrtc_calendar_t &tm )
 {
 	uint8_t TimeDate[7];
 
@@ -76,7 +69,7 @@ void DSRTC::writeDate( tmElements_t &tm )
 	writeN(DS323X_DATE_REGS, TimeDate + 3 * sizeof(uint8_t), 4);
 }
 
-void DSRTC::writeTime( tmElements_t &tm )
+void DSRTC::writeTime( dsrtc_calendar_t &tm )
 {
 	uint8_t TimeDate[7];
 	populateTimeElements( tm, TimeDate );
@@ -84,7 +77,7 @@ void DSRTC::writeTime( tmElements_t &tm )
 	writeN(DS323X_TIME_REGS, TimeDate, 3);
 }
 
-void DSRTC::write( tmElements_t &tm )
+void DSRTC::write( dsrtc_calendar_t &tm )
 {
 	uint8_t TimeDate[7];
 
@@ -104,13 +97,13 @@ void DSRTC::readTemperature(tpElements_t &tmp)
 	tmp.Decimal = (data[1] >> 6) * 25;
 }
 
-void DSRTC::readAlarm(uint8_t alarm, alarmMode_t &mode, tmElements_t &tm)
+void DSRTC::readAlarm(uint8_t alarm, alarmMode_t &mode, dsrtc_calendar_t &tm)
 {
 	uint8_t data[4];
 	uint8_t flags;
 	uint8_t addr, offset, length;
 
-	memset(&tm, 0, sizeof(tmElements_t));
+	memset(&tm, 0, sizeof(dsrtc_calendar_t));
 	mode = alarmModeUnknown;
 	if ((alarm < 1) || (alarm > 2)) return;
 	if (alarm == 1)
@@ -175,7 +168,7 @@ void DSRTC::readAlarm(uint8_t alarm, alarmMode_t &mode, tmElements_t &tm)
 	}
 }
 
-void DSRTC::writeAlarm(uint8_t alarm, alarmMode_t mode, tmElements_t tm) {
+void DSRTC::writeAlarm(uint8_t alarm, alarmMode_t mode, dsrtc_calendar_t tm) {
 	uint8_t data[4];
 	uint8_t addr, offset, length;
 

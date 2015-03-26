@@ -8,6 +8,15 @@
 #endif
 
 #include <Time.h>
+typedef struct  { 
+  uint8_t Second; 
+  uint8_t Minute; 
+  uint8_t Hour; 
+  uint8_t Wday;   // day of week, sunday is day 1
+  uint8_t Day;
+  uint8_t Month; 
+  uint8_t Year;   // offset from 1970; 
+} 	dsrtc_calendar_t;
 
 enum alarmMode_t {
   alarmModeUnknown,       // not in spec table
@@ -91,17 +100,16 @@ const uint8_t NO_TEMPERATURE     = 0x7F;
 class DSRTC {
     public:
         // Date and Time
-        void read(tmElements_t &tm);
+        void read(dsrtc_calendar_t &tm);
         uint8_t dec2bcd(const uint8_t val);
         uint8_t bcd2dec(const uint8_t val);
         bool available();
-        time_t get();
-        void write(tmElements_t &tm);
-        void writeTime(tmElements_t &tm);
-        void writeDate(tmElements_t &tm);
+        void write(dsrtc_calendar_t &tm);
+        void writeTime(dsrtc_calendar_t &tm);
+        void writeDate(dsrtc_calendar_t &tm);
         // Alarms
-        void readAlarm(uint8_t alarm, alarmMode_t &mode, tmElements_t &tm);
-        void writeAlarm(uint8_t alarm, alarmMode_t mode, tmElements_t tm);
+        void readAlarm(uint8_t alarm, alarmMode_t &mode, dsrtc_calendar_t &tm);
+        void writeAlarm(uint8_t alarm, alarmMode_t mode, dsrtc_calendar_t tm);
         // Control Register
         void setBBOscillator(bool enable);
         void setBBSqareWave(bool enable);
@@ -124,8 +132,8 @@ class DSRTC {
         // Temperature
         void readTemperature(tpElements_t &tmp);
     protected:
-        void populateTimeElements( tmElements_t &tm, uint8_t TimeDate[] );
-        void populateDateElements( tmElements_t &tm, uint8_t TimeDate[] );
+        void populateTimeElements( dsrtc_calendar_t &tm, uint8_t TimeDate[] );
+        void populateDateElements( dsrtc_calendar_t &tm, uint8_t TimeDate[] );
     private:
         virtual uint8_t read1(uint8_t addr);
         virtual void write1(uint8_t addr, uint8_t data);
