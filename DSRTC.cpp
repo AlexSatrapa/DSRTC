@@ -1,11 +1,11 @@
 #include <DSRTC.h>
 
-uint8_t DSRTC::dec2bcd(const uint8_t val)
+byte DSRTC::dec2bcd(const byte val)
 {
 	return ((val / 10 * 16) + (val % 10));
 }
 
-uint8_t DSRTC::bcd2dec(const uint8_t val)
+byte DSRTC::bcd2dec(const byte val)
 {
 	return ((val / 16 * 10) + (val % 16));
 }
@@ -16,8 +16,8 @@ bool DSRTC::available() {
 
 void DSRTC::read( dsrtc_calendar_t &tm )
 {
-	uint8_t TimeDate[7];      //second,minute,hour,dow,day,month,year
-	uint8_t century = 0;
+	byte TimeDate[7];      //second,minute,hour,dow,day,month,year
+	byte century = 0;
 
 	readN(DS323X_TIME_REGS, TimeDate, 7);
 
@@ -39,14 +39,14 @@ void DSRTC::read( dsrtc_calendar_t &tm )
 	if (century != 0) tm.Year += 100;
 }
 
-inline void DSRTC::populateTimeElements( dsrtc_calendar_t &tm, uint8_t TimeDate[] )
+inline void DSRTC::populateTimeElements( dsrtc_calendar_t &tm, byte TimeDate[] )
 {
 	TimeDate[0] = dec2bcd(tm.Second);
 	TimeDate[1] = dec2bcd(tm.Minute);
 	TimeDate[2] = dec2bcd(tm.Hour);
 }
 
-inline void DSRTC::populateDateElements( dsrtc_calendar_t &tm, uint8_t TimeDate[] )
+inline void DSRTC::populateDateElements( dsrtc_calendar_t &tm, byte TimeDate[] )
 {
 	if( tm.Wday == 0 || tm.Wday > 7)
 	{
@@ -60,16 +60,16 @@ inline void DSRTC::populateDateElements( dsrtc_calendar_t &tm, uint8_t TimeDate[
 
 void DSRTC::writeDate( dsrtc_calendar_t &tm )
 {
-	uint8_t TimeDate[7];
+	byte TimeDate[7];
 
 	populateDateElements(tm, TimeDate);
 
-	writeN(DS323X_DATE_REGS, TimeDate + 3 * sizeof(uint8_t), 4);
+	writeN(DS323X_DATE_REGS, TimeDate + 3 * sizeof(byte), 4);
 }
 
 void DSRTC::writeTime( dsrtc_calendar_t &tm )
 {
-	uint8_t TimeDate[7];
+	byte TimeDate[7];
 	populateTimeElements( tm, TimeDate );
 
 	writeN(DS323X_TIME_REGS, TimeDate, 3);
@@ -77,7 +77,7 @@ void DSRTC::writeTime( dsrtc_calendar_t &tm )
 
 void DSRTC::write( dsrtc_calendar_t &tm )
 {
-	uint8_t TimeDate[7];
+	byte TimeDate[7];
 
 	populateTimeElements(tm, TimeDate);
 	populateDateElements(tm, TimeDate);
@@ -87,7 +87,7 @@ void DSRTC::write( dsrtc_calendar_t &tm )
 
 void DSRTC::readTemperature(tpElements_t &tmp)
 {
-	uint8_t data[2];
+	byte data[2];
 
 	readN(DS323X_TEMP_MSB, data, 2);
 
@@ -95,11 +95,11 @@ void DSRTC::readTemperature(tpElements_t &tmp)
 	tmp.Decimal = (data[1] >> 6) * 25;
 }
 
-void DSRTC::readAlarm(uint8_t alarm, alarmMode_t &mode, dsrtc_calendar_t &tm)
+void DSRTC::readAlarm(byte alarm, alarmMode_t &mode, dsrtc_calendar_t &tm)
 {
-	uint8_t data[4];
-	uint8_t flags;
-	uint8_t addr, offset, length;
+	byte data[4];
+	byte flags;
+	byte addr, offset, length;
 
 	memset(&tm, 0, sizeof(dsrtc_calendar_t));
 	mode = alarmModeUnknown;
@@ -116,7 +116,7 @@ void DSRTC::readAlarm(uint8_t alarm, alarmMode_t &mode, dsrtc_calendar_t &tm)
 	}
 
 	data[0] = 0;
-	readN(addr, data + offset * sizeof(uint8_t), length);
+	readN(addr, data + offset * sizeof(byte), length);
 
 	flags =
 		((data[0] & 0x80) >> 7) |
@@ -166,9 +166,9 @@ void DSRTC::readAlarm(uint8_t alarm, alarmMode_t &mode, dsrtc_calendar_t &tm)
 	}
 }
 
-void DSRTC::writeAlarm(uint8_t alarm, alarmMode_t mode, dsrtc_calendar_t tm) {
-	uint8_t data[4];
-	uint8_t addr, offset, length;
+void DSRTC::writeAlarm(byte alarm, alarmMode_t mode, dsrtc_calendar_t tm) {
+	byte data[4];
+	byte addr, offset, length;
 
 	switch (mode) {
 		case alarmModePerSecond:
@@ -233,13 +233,13 @@ void DSRTC::writeAlarm(uint8_t alarm, alarmMode_t mode, dsrtc_calendar_t tm) {
 		length = 3;
 	}
 
-	writeN( addr, data + offset * sizeof(uint8_t), length);
+	writeN( addr, data + offset * sizeof(byte), length);
 }
 
-bool DSRTC::isAlarmInterrupt(uint8_t alarm)
+bool DSRTC::isAlarmInterrupt(byte alarm)
 {
 	if ((alarm > 2) || (alarm < 1)) return false;
-	uint8_t value = readControlRegister() & (DS323X_A1IE | DS323X_A2IE | DS323X_INTCN);
+	byte value = readControlRegister() & (DS323X_A1IE | DS323X_A2IE | DS323X_INTCN);
 	if (alarm == 1) {
 		return ((value & (DS323X_A1IE | DS323X_INTCN)) == (DS323X_A1IE | DS323X_INTCN));
 	} else {
@@ -247,21 +247,21 @@ bool DSRTC::isAlarmInterrupt(uint8_t alarm)
 	}
 }
 
-uint8_t DSRTC::isAlarmFlag()
+byte DSRTC::isAlarmFlag()
 {
-	uint8_t value = readStatusRegister();
+	byte value = readStatusRegister();
 	return (value & (DS323X_A1F | DS323X_A2F));
 }
 
-bool DSRTC::isAlarmFlag(uint8_t alarm)
+bool DSRTC::isAlarmFlag(byte alarm)
 {
-	uint8_t value = isAlarmFlag();
+	byte value = isAlarmFlag();
 	return ((value & alarm) != 0);
 }
 
-void DSRTC::clearAlarmFlag(uint8_t alarm)
+void DSRTC::clearAlarmFlag(byte alarm)
 {
-	uint8_t alarm_mask, value;
+	byte alarm_mask, value;
 
 	if ((alarm != 1) and (alarm != 2) and (alarm != 3)) return;
 	alarm_mask = ~alarm;
@@ -277,19 +277,19 @@ void DSRTC::clearAlarmFlag(uint8_t alarm)
  *   ~EOSC  BBSQW  CONV  RS2  RS1  INTCN  A2IE  A1IE
  */
 
-uint8_t DSRTC::readControlRegister()
+byte DSRTC::readControlRegister()
 {
 	return read1(DS323X_CONTROL_REG);
 }
 
-void DSRTC::writeControlRegister(uint8_t value)
+void DSRTC::writeControlRegister(byte value)
 {
 	write1(DS323X_CONTROL_REG, value);
 }
 
 void DSRTC::setBBOscillator(bool enable)
 {
-	uint8_t value = readControlRegister();
+	byte value = readControlRegister();
 	if (enable)
 	{
 		value |= DS323X_EOSC;
@@ -301,7 +301,7 @@ void DSRTC::setBBOscillator(bool enable)
 
 void DSRTC::setBBSqareWave(bool enable)
 {
-	uint8_t value = readControlRegister();
+	byte value = readControlRegister();
 	if (enable)
 	{
 		value |= DS323X_BBSQW;
@@ -313,7 +313,7 @@ void DSRTC::setBBSqareWave(bool enable)
 
 void DSRTC::setSQIMode(sqiMode_t mode)
 {
-	uint8_t value = readControlRegister() & 0xE0;
+	byte value = readControlRegister() & 0xE0;
 	switch (mode)
 	{
 		case sqiModeNone: value |= DS323X_INTCN; break;
@@ -333,12 +333,12 @@ void DSRTC::setSQIMode(sqiMode_t mode)
  *
  *   OSF  BB33KHZ  CRATE1  CRATE0  EN33KHZ  BSY  A2F  A1F
  */
-uint8_t DSRTC::readStatusRegister()
+byte DSRTC::readStatusRegister()
 {
 	return read1(DS323X_STATUS_REG);
 }
 
-void DSRTC::writeStatusRegister(uint8_t value)
+void DSRTC::writeStatusRegister(byte value)
 {
 	write1(DS323X_STATUS_REG, value);
 }
@@ -350,7 +350,7 @@ bool DSRTC::isOscillatorStopFlag()
 
 void DSRTC::setOscillatorStopFlag(bool enable)
 {
-	uint8_t value = readStatusRegister();
+	byte value = readStatusRegister();
 	if (enable)
 	{
 		value |= DS323X_OSF;
@@ -362,7 +362,7 @@ void DSRTC::setOscillatorStopFlag(bool enable)
 
 void DSRTC::setBB33kHzOutput(bool enable)
 {
-	uint8_t value = readStatusRegister();
+	byte value = readStatusRegister();
 	if (enable)
 	{
 		value |= DS323X_BB33KHZ;
@@ -373,7 +373,7 @@ void DSRTC::setBB33kHzOutput(bool enable)
 
 void DSRTC::setTCXORate(tempScanRate_t rate)
 {
-	uint8_t value = readStatusRegister() & ~(DS323X_CRATE1|DS323X_CRATE0); // clear the rate bits
+	byte value = readStatusRegister() & ~(DS323X_CRATE1|DS323X_CRATE0); // clear the rate bits
 	switch (rate)
 	{
 		case tempScanRate64sec: value |= DS323X_CRATE_64; break;
@@ -386,7 +386,7 @@ void DSRTC::setTCXORate(tempScanRate_t rate)
 
 void DSRTC::set33kHzOutput(bool enable)
 {
-	uint8_t value = readStatusRegister();
+	byte value = readStatusRegister();
 	if (enable)
 	{
 		value |= DS323X_EN33KHZ;
